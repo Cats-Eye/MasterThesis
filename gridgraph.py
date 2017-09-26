@@ -1,7 +1,6 @@
-import sys
-sys.path.append("D:\Python34\lib\site-packages")
 import networkx as nx
 import matplotlib.pyplot as plt
+
 
 def org_grid_2d_graph(m,n,periodic=False,create_using=None): #重み付き二次元格子グラフの生成関数
     G=nx.empty_graph(0,create_using)
@@ -13,9 +12,20 @@ def org_grid_2d_graph(m,n,periodic=False,create_using=None): #重み付き二次
     G.add_weighted_edges_from( [(i,j),(i,j-1),1] for i in rows for j in columns if j>0 )
     return G
 
-n = 9
+
+n = 10
 G = org_grid_2d_graph(n, n)
-pos= dict((n, n) for n in G.nodes()) #ノード名は座標に等しいことを利用しノードの描画位置を固定
+
+pos= dict((n, n) for n in G.nodes()) #ノード名を座標に指定し描画位置を固定
+
+edge_labels = {} #可視化のために辺のweightとラベルの紐付け
+visited = {} #処理済ラベル
+for s,t in G.edges_iter():
+    edge_labels[s,t] = G.edge[s][t]['weight']
+    visited[s,t] = False
+
+for s in G.nodes_iter(): #全ノードを黄に
+    G.node[s]['color'] = 'yellow'
 
 for i in range(n): #端の部分を赤に
     if i == 0 or i ==n-1:
@@ -23,15 +33,19 @@ for i in range(n): #端の部分を赤に
             G.node[(i, j)]['color'] = 'r'
             G.node[(j, i)]['color'] = 'r'
 
-edge_labels={}
 
-for i in range(1,n):
-    for j in range(n):
-        edge_labels[(i,j),(i-1,j)] = G[(i,j)][(i-1,j)]['weight']
 
-for j in range(1,n):
-    for i in range(n):
-        edge_labels[(i,j),(i,j-1)] = G[(i,j)][(i,j-1)]['weight']
+#for s,t in G.edges_iter():
+#visited[()]
+
+#for j in range(1,n-1):
+#    weightsum=0
+#    for n in G.edges((j,i)):
+#        if fixed[n]=true
+#        weightsum=G[(j,i)][(j-1,i)]['weight']+G[(j,i)][(j+1,i)]['weight']+G[(j,i)][(j,i-1)]['weight']+G[(j,i)][(j,i+1)]['weight']
+#        G.node[(j,i)]['color'] = 'yellow'
+
+#print(G.nodes('color'='r'))
 
 nx.draw_networkx(G, pos, #描画
         node_color=[G.node[n].get('color', 'w') for n in G.nodes_iter()]) #ノードを白に
