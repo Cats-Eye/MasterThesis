@@ -18,37 +18,22 @@ G = org_grid_2d_graph(n, n)
 
 pos= dict((n, n) for n in G.nodes()) #ノード名を座標に指定し描画位置を固定
 
-edge_labels = {} #可視化のために辺のweightとラベルの紐付け
-visited = {} #処理済ラベル
+edge_labels = {} #可視化のためにエッジのweightとラベルの紐付け
+visited = {} #エッジの処理済ラベル
 for s,t in G.edges_iter():
     edge_labels[s,t] = G.edge[s][t]['weight']
     visited[s,t] = False
 
-for s in G.nodes_iter(): #全ノードを黄に
-    G.node[s]['color'] = 'yellow'
+for (s,t) in G.nodes_iter(): #端のノードを赤に
+    if s == 0 or s == n-1 or t == 0 or t == n-1:
+        G.node[(s, t)]['color'] = 'r'
 
-for i in range(n): #端の部分を赤に
-    if i == 0 or i ==n-1:
-        for j in range(n):
-            G.node[(i, j)]['color'] = 'r'
-            G.node[(j, i)]['color'] = 'r'
-
-
-
-#for s,t in G.edges_iter():
-#visited[()]
-
-#for j in range(1,n-1):
-#    weightsum=0
-#    for n in G.edges((j,i)):
-#        if fixed[n]=true
-#        weightsum=G[(j,i)][(j-1,i)]['weight']+G[(j,i)][(j+1,i)]['weight']+G[(j,i)][(j,i-1)]['weight']+G[(j,i)][(j,i+1)]['weight']
-#        G.node[(j,i)]['color'] = 'yellow'
-
-#print(G.nodes('color'='r'))
+for (s,t),(p,q) in G.edges_iter(): #端のノードに隣接するエッジを処理済ラベルに
+    if s == 0 or s == n-1 or t == 0 or t == n-1 or p == 0 or p == n-1 or q == 0 or q == n-1:
+        visited[(s,t),(p,q)] = True
 
 nx.draw_networkx(G, pos, #描画
-        node_color=[G.node[n].get('color', 'w') for n in G.nodes_iter()]) #ノードを白に
+        node_color=[G.node[n].get('color', 'yellow') for n in G.nodes_iter()]) #全ノードを黄に
 nx.draw_networkx_edge_labels(G, pos, edge_labels)
 plt.axis('equal') #x,yの座標値の増分を同量に調整
 plt.gca().xaxis.set_visible(False)
