@@ -118,7 +118,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                     temp_edge[0] = G.edge[(0,j+1)][(1,j+1)]['weight']
                     label=label_generate(temp_edge,input)
                     newfrontier_generate(label, temp_edge, newfrontier, frontier)
-
+                    
             elif j == input: #一番上端の行で上が処理済
                 print("一番上端")
                 if G.edge[(i,j)][(i,j+1)]['weight'] == 0: #上は入る矢印
