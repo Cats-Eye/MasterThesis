@@ -28,7 +28,7 @@ def newfrontier_generate(label_g, temp_edge_g, newfrontier_g, frontier_g):#フ�
         newfrontier.setdefault(label_g, {})['count'] = frontier_g[key]['count']#場合の数
     return(0)
 
-input =4  #考えたいgridの一辺の長さ
+input =2  #考えたいgridの一辺の長さ
 n = input + 2 #それに２を足す
 G = org_grid_2d_graph(n, n)
 
@@ -50,10 +50,10 @@ for ((s,t),(p,q)) in G.edges_iter(): #端のノードに隣接するエッジの
 #     if t == 0 or q == n-1:
 #         G.edge[(s,t)][(p,q)]['weight'] = 0
 
-# G.edge[(1,0)][(1,1)]['weight'] = 0 #解が２になる小池さんグリッド
-# G.edge[(2,0)][(2,1)]['weight'] = 0
-# G.edge[(2,1)][(3,1)]['weight'] = 0
-# G.edge[(2,2)][(3,2)]['weight'] = 0
+G.edge[(1,0)][(1,1)]['weight'] = 0 #解が２になる小池さんグリッド
+G.edge[(2,0)][(2,1)]['weight'] = 0
+G.edge[(2,1)][(3,1)]['weight'] = 0
+G.edge[(2,2)][(3,2)]['weight'] = 0
 
 temp_edge=[]
 label=0
