@@ -63,17 +63,15 @@ for i in range(1,input+1):#最下段のフロンティアを入力
     temp_edge.append(G.edge[(i,0)][(i,1)]['weight'])
 label=label_generate(temp_edge,input)
 
-energysum=0
-label_generate(energy)
-energy={15:1, #パターン１[1 1 1 1]
-        0:2,  #パターン２[0 0 0 0]
-        5:3,  #パターン３[1 0 1 0]
-        10:4, #パターン４[0 1 0 1]
-        9:5,  #パターン５[1 0 0 1]
-        6:6}  #パターン６[0 1 1 0]
+# energy=0
+# energy_dic={15:1, #パターン１[1 1 1 1]
+#         0:2,  #パターン２[0 0 0 0]
+#         5:3,  #パターン３[1 0 1 0]
+#         10:4, #パターン４[0 1 0 1]
+#         9:5,  #パターン５[1 0 0 1]
+#         6:6}  #パターン６[0 1 1 0]
 
 weightsum = 0
-energy_label = 0
 frontier={}
 newfrontier={}
 frontier.setdefault(label, {})['edge'] = copy.deepcopy(temp_edge)#フロンティアの辺の向き
@@ -84,7 +82,6 @@ for j in range(1,input+1):#1~n-2まですべての行
         for key in frontier:#すべてのフロンティアについて
             temp_edge=frontier[key]['edge']#１つのフロンティアについてedgeを取り出す
             weightsum = temp_edge[0] + temp_edge[i]#まず処理済の左と下のweighttsumを求める
-            energy_label = (2**0)*temp_edge[0] + (2**1)*temp_edge[i]
             print((i,j))
             print(frontier)
             print(temp_edge,"について計算開始")
