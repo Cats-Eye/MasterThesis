@@ -46,46 +46,106 @@ for (s,t) in G.nodes_iter(): #端のノードを赤に
         G.node[(s, t)]['color'] = 'yellow' #他は黄に
 
 for ((s,t),(p,q)) in G.edges_iter(): #端のノードに隣接するエッジのweightを１にしてとりあえずデフォの方向に
-    if s == 0 or s == n-1 or t == 0 or t == n-1 or p == 0 or p == n-1 or q == 0 or q == n-1:
+    if s == 0 or t == 0 or p == n-1 or q == n-1:
         G.edge[(s,t)][(p,q)]['weight'] = 1
     else: #他のedgeは0で未設定で
         G.edge[(s,t)][(p,q)]['weight'] = 0
 
 # for ((s,t),(p,q)) in G.edges_iter(): #テスト
-#     if t == 0 or q == n-1:
-#         G.edge[(s,t)][(p,q)]['weight'] = -1
+#     if  p == n-1 or q == n-1:
+#         G.edge[(s,t)][(p,q)]['weight'] = 0
 
 # G.edge[(1,0)][(1,1)]['weight'] = -1 #解が２になる小池さんグリッド
 # G.edge[(2,0)][(2,1)]['weight'] = -1
 # G.edge[(2,1)][(3,1)]['weight'] = -1
 # G.edge[(2,2)][(3,2)]['weight'] = -1
 
-G.edge[(2,0)][(2,1)]['weight'] = -1 #パワポの4*4グリッド
+# G.edge[(2,0)][(2,1)]['weight'] = -1 #パワポの4*4グリッド
+# G.edge[(0,1)][(1,1)]['weight'] = -1
+# G.edge[(0,3)][(1,3)]['weight'] = -1
+# G.edge[(0,4)][(1,4)]['weight'] = -1
+# G.edge[(1,4)][(1,5)]['weight'] = -1
+# G.edge[(4,4)][(4,5)]['weight'] = -1
+# G.edge[(1,4)][(1,5)]['weight'] = -1
+# G.edge[(4,1)][(5,1)]['weight'] = -1
+# G.edge[(4,2)][(5,2)]['weight'] = -1
+
+G.edge[(0,4)][(1,4)]['weight'] = 0 #4*4グリッド
+G.edge[(0,3)][(1,3)]['weight'] = 0
+G.edge[(0,2)][(1,2)]['weight'] = -1
 G.edge[(0,1)][(1,1)]['weight'] = -1
-G.edge[(0,3)][(1,3)]['weight'] = -1
-G.edge[(0,4)][(1,4)]['weight'] = 0
-G.edge[(1,4)][(1,5)]['weight'] = -1
-G.edge[(4,4)][(4,5)]['weight'] = -1
-G.edge[(1,4)][(1,5)]['weight'] = -1
+
+# G.edge[(1,0)][(1,1)]['weight'] = 0
+G.edge[(2,0)][(2,1)]['weight'] = 0
+# G.edge[(3,0)][(3,1)]['weight'] = 0
+G.edge[(4,0)][(4,1)]['weight'] = 0
+
 G.edge[(4,1)][(5,1)]['weight'] = -1
 G.edge[(4,2)][(5,2)]['weight'] = -1
+G.edge[(4,3)][(5,3)]['weight'] = 0
+G.edge[(4,4)][(5,4)]['weight'] = -1
+
+G.edge[(4,4)][(4,5)]['weight'] = -1
+# G.edge[(3,4)][(3,5)]['weight'] = 0
+G.edge[(2,4)][(2,5)]['weight'] = 0
+G.edge[(1,4)][(1,5)]['weight'] = 0
+
+# G.edge[(0,3)][(1,3)]['weight'] = -1 #3*3グリッド
+# G.edge[(0,2)][(1,2)]['weight'] = -1
+# G.edge[(0,1)][(1,1)]['weight'] = -1
+#
+# G.edge[(1,0)][(1,1)]['weight'] = -1
+# G.edge[(2,0)][(2,1)]['weight'] = -1
+# G.edge[(3,0)][(3,1)]['weight'] = 0
+#
+# G.edge[(3,1)][(4,1)]['weight'] = 0
+# G.edge[(3,2)][(4,2)]['weight'] = -1
+# G.edge[(3,3)][(4,3)]['weight'] = 0
+#
+# G.edge[(3,3)][(3,4)]['weight'] = -1
+# G.edge[(2,3)][(2,4)]['weight'] = -1
+# G.edge[(1,3)][(1,4)]['weight'] = -1
 
 temp_edge=[]
 label=0
-
-temp_edge.append(G.edge[(0,1)][(1,1)]['weight'])#横向き辺を最初に追加
-for i in range(1,input+1):#最下段のフロンティアを入力
-    temp_edge.append(G.edge[(i,0)][(i,1)]['weight'])
-label=label_generate(temp_edge,input)
-
 weightsum = 0
 frontier={}
 newfrontier={}
-frontier.setdefault(label, {})['edge'] = copy.deepcopy(temp_edge)#フロンティアの辺の向き
-frontier.setdefault(label, {})['count'] = 1#場合の数
+
+if G.edge[(0,1)][(1,1)]['weight'] != 0: #右端が決まっている
+    temp_edge.append(G.edge[(0,1)][(1,1)]['weight'])
+    label=G.edge[(0,1)][(1,1)]['weight']
+    frontier.setdefault(label, {})['edge'] = copy.deepcopy(temp_edge)
+else:#決まってない
+    temp_edge.append(1)
+    frontier.setdefault(1, {})['edge'] = copy.deepcopy(temp_edge)
+    temp_edge[0]=-1
+    frontier.setdefault(0, {})['edge'] = copy.deepcopy(temp_edge)
+
+for i in range(1,input+1):
+    for key in frontier:
+        temp_edge=frontier[key]['edge']
+        if G.edge[(i,0)][(i,1)]['weight'] != 0:
+            temp_edge.append(G.edge[(i,0)][(i,1)]['weight'])
+            label=label_generate(temp_edge,i)
+            newfrontier.setdefault(label, {})['edge'] = copy.deepcopy(temp_edge)
+        else:
+            temp_edge.append(1)
+            label=label_generate(temp_edge,i)
+            newfrontier.setdefault(label, {})['edge'] = copy.deepcopy(temp_edge)
+            temp_edge[i]=-1
+            label=label_generate(temp_edge,i)
+            newfrontier.setdefault(label, {})['edge'] = copy.deepcopy(temp_edge)
+    frontier = newfrontier
+    newfrontier = {}
+
+for key in frontier:
+    frontier.setdefault(key, {})['count'] = 1
 
 for j in range(1,input+1):#1~n-2まですべての行
     for i in range(1,input+1):#すべての列
+        print((i,j))
+        print(frontier)
         for key in frontier:#すべてのフロンティアについて
             temp_edge=frontier[key]['edge']#１つのフロンティアについてedgeを取り出す
             weightsum = 0
@@ -93,12 +153,9 @@ for j in range(1,input+1):#1~n-2まですべての行
                 weightsum += 1
             if temp_edge[i] == 1:
                 weightsum += 1
-            print((i,j))
-            print(frontier)
-            print(temp_edge,"について計算開始")
 
             if G.edge[(i,j)][(i,j+1)]['weight'] != 0 and G.edge[(i,j)][(i+1,j)]['weight'] != 0: #右も上も処理済
-                print("右も上も処理済")
+                print(temp_edge,"右も上も処理済")
                 if G.edge[(i,j)][(i,j+1)]['weight'] == -1:#上は入る矢印
                     weightsum += 1
                 if G.edge[(i,j)][(i+1,j)]['weight'] == -1:#右は入る矢印
@@ -110,7 +167,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                     newfrontier_generate(label, temp_edge, newfrontier, frontier)
 
             elif G.edge[(i,j)][(i+1,j)]['weight'] != 0: #右が処理済
-                print("右が処理済")
+                print(temp_edge,"右が処理済")
                 if G.edge[(i,j)][(i+1,j)]['weight'] == -1: #右は入る矢印
                     weightsum += 1
                 if weightsum == 1: #入るのが１本なら
@@ -126,7 +183,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                     newfrontier_generate(label, temp_edge, newfrontier, frontier)
 
             elif G.edge[(i,j)][(i,j+1)]['weight'] != 0: #上が処理済
-                print("上が処理済")
+                print(temp_edge,"上が処理済")
                 if G.edge[(i,j)][(i,j+1)]['weight'] == -1: #上は入る矢印
                     weightsum += 1
 
@@ -143,16 +200,15 @@ for j in range(1,input+1):#1~n-2まですべての行
                     newfrontier_generate(label, temp_edge, newfrontier, frontier)
 
             else: #右も上も未処理
-                print("右も上も未処理")
                 if weightsum == 0: #出るのが2本なら
-                    print("出るのが２本")
+                    print(temp_edge,"右も上も未処理","出るのが２本")
                     temp_edge[i] = -1#上は入る矢印
                     temp_edge[0] = -1#右も入る矢印
                     label=label_generate(temp_edge,input)
                     newfrontier_generate(label, temp_edge, newfrontier, frontier)
 
                 elif weightsum == 1: #入るのが１本なら２パターン
-                    print("入るのが１本で２パターン")
+                    print(temp_edge,"右も上も未処理","入るのが１本で２パターン")
                     temp_edge[i] = -1 #上は入る矢印
                     temp_edge[0] = 1 #右は出る矢印
                     label=label_generate(temp_edge,input)
@@ -164,7 +220,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                     newfrontier_generate(label, temp_edge, newfrontier, frontier)
 
                 else: #weightsum == 2で入るのが2本なら
-                    print("入るのが２本")
+                    print(temp_edge,"右も上も未処理","入るのが２本")
                     temp_edge[i] = 1 #上は出る矢印
                     temp_edge[0] = 1 #右も出る矢印
                     label=label_generate(temp_edge,input)
