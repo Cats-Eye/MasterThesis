@@ -28,7 +28,7 @@ def newfrontier_generate(label_g, temp_edge_g, newfrontier_g, frontier_g):#フ�
         newfrontier_g[label_g]['count'] = newfrontier_g[label_g]['count'] + frontier_g[key]['count']
     else:
         newfrontier_g.setdefault(label_g, {})['edge'] = copy.deepcopy(temp_edge_g)#フロンティアの辺の向き
-        newfrontier.setdefault(label_g, {})['count'] = frontier_g[key]['count']#場合の数
+        newfrontier_g.setdefault(label_g, {})['count'] = frontier_g[key]['count']#場合の数
     return(0)
 
 input = 4 #考えたいgridの一辺の長さ
@@ -63,7 +63,7 @@ for ((s,t),(p,q)) in G.edges_iter(): #端のノードに隣接するエッジの
 G.edge[(2,0)][(2,1)]['weight'] = -1 #パワポの4*4グリッド
 G.edge[(0,1)][(1,1)]['weight'] = -1
 G.edge[(0,3)][(1,3)]['weight'] = -1
-G.edge[(0,4)][(1,4)]['weight'] = -1
+G.edge[(0,4)][(1,4)]['weight'] = 0
 G.edge[(1,4)][(1,5)]['weight'] = -1
 G.edge[(4,4)][(4,5)]['weight'] = -1
 G.edge[(1,4)][(1,5)]['weight'] = -1
@@ -170,16 +170,33 @@ for j in range(1,input+1):#1~n-2まですべての行
                     label=label_generate(temp_edge,input)
                     newfrontier_generate(label, temp_edge, newfrontier, frontier)
 
-        frontier = newfrontier
+        if i == input:#右端
+            print("右端",newfrontier)
+            newfrontier2 = {}
+            if G.edge[(0,j+1)][(1,j+1)]['weight'] == 0:#次の行の左端が自由端
+                print("左端自由端")
+                for key in newfrontier:#１つのフロンティアにつき２パターン
+                    temp_edge=newfrontier[key]['edge']
+                    temp_edge[0] = -1
+                    label=label_generate(temp_edge,input)
+                    newfrontier_generate(label, temp_edge, newfrontier2, newfrontier)
+
+                    temp_edge[0] = 1
+                    label=label_generate(temp_edge,input)
+                    newfrontier_generate(label, temp_edge, newfrontier2, newfrontier)
+            else:#処理済
+                print("左端処理済")
+                for key in newfrontier:
+                    temp_edge=newfrontier[key]['edge']#１つのフロンティアについてedgeを取り出す
+                    temp_edge[0] = G.edge[(0,j+1)][(1,j+1)]['weight']
+                    label=label_generate(temp_edge,input)
+                    newfrontier_generate(label, temp_edge, newfrontier2, newfrontier)
+            frontier = newfrontier2
+        else:
+            frontier = newfrontier
+
         newfrontier={}
         print(" ")
-
-    if G.edge[(0,j+1)][(1,j+1)]['weight'] == 0:
-        # for key in newfrontier:
-        frontier == frontier
-    else:
-        for key in frontier:
-            frontier[key]['edge'][0]=G.edge[(0,j+1)][(1,j+1)]['weight']
 
 count=0
 for key in frontier:
