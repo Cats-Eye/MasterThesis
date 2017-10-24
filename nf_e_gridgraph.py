@@ -32,7 +32,7 @@ def newfrontier_generate(label_g, temp_energysum_g, temp_edge_g, newfrontier_g, 
         newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('count', frontier_g[key1][key]['count'])#場合の数
     return(0)
 
-input =4  #考えたいgridの一辺の長さ
+input = 2 #考えたいgridの一辺の長さ
 n = input + 2 #それに２を足す
 G = org_grid_2d_graph(n, n)
 
@@ -54,20 +54,20 @@ for ((s,t),(p,q)) in G.edges_iter(): #端のノードに隣接するエッジの
 #     if t == 0 or q == n-1:
 #         G.edge[(s,t)][(p,q)]['weight'] = 0
 
-# G.edge[(1,0)][(1,1)]['weight'] = 0 #解が２になる小池さんグリッド
-# G.edge[(2,0)][(2,1)]['weight'] = 0
-# G.edge[(2,1)][(3,1)]['weight'] = 0
-# G.edge[(2,2)][(3,2)]['weight'] = 0
+G.edge[(1,0)][(1,1)]['weight'] = 0 #解が２になる小池さんグリッド
+G.edge[(2,0)][(2,1)]['weight'] = 0
+G.edge[(2,1)][(3,1)]['weight'] = 0
+G.edge[(2,2)][(3,2)]['weight'] = 0
 
-G.edge[(2,0)][(2,1)]['weight'] = 0 #パワポの4*4グリッド
-G.edge[(0,1)][(1,1)]['weight'] = 0
-G.edge[(0,3)][(1,3)]['weight'] = 0
-G.edge[(0,4)][(1,4)]['weight'] = 0
-G.edge[(1,4)][(1,5)]['weight'] = 0
-G.edge[(4,4)][(4,5)]['weight'] = 0
-G.edge[(1,4)][(1,5)]['weight'] = 0
-G.edge[(4,1)][(5,1)]['weight'] = 0
-G.edge[(4,2)][(5,2)]['weight'] = 0
+# G.edge[(2,0)][(2,1)]['weight'] = 0 #パワポの4*4グリッド
+# G.edge[(0,1)][(1,1)]['weight'] = 0
+# G.edge[(0,3)][(1,3)]['weight'] = 0
+# G.edge[(0,4)][(1,4)]['weight'] = 0
+# G.edge[(1,4)][(1,5)]['weight'] = 0
+# G.edge[(4,4)][(4,5)]['weight'] = 0
+# G.edge[(1,4)][(1,5)]['weight'] = 0
+# G.edge[(4,1)][(5,1)]['weight'] = 0
+# G.edge[(4,2)][(5,2)]['weight'] = 0
 
 energy_dic={15:1, #パターン１[1 1 1 1] #格子点におけるエネルギー
              0:2, #パターン２[0 0 0 0]
@@ -91,8 +91,6 @@ label=label_generate(temp_edge,input)
 
 frontier.setdefault(label, {}).setdefault(0, {}).setdefault('edge', copy.deepcopy(temp_edge))#フロンティアの辺の向き
 frontier.setdefault(label, {}).setdefault(0, {}).setdefault('count', 1)#場合の数
-frontier.setdefault(label, {}).setdefault(0, {}).setdefault('energysum', 0)#場合の数
-print(frontier)
 
 for j in range(1,input+1):#1~n-2まですべての行
     for i in range(1,input+1):#すべての列
