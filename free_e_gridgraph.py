@@ -33,7 +33,7 @@ def newfrontier_generate(label_g, temp_energysum_g, temp_edge_g, newfrontier_g, 
         newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('count', frontier_g[key1][key]['count'])#場合の数
     return(0)
 
-input = 2 #考えたいgridの一辺の長さ
+input =  2 #考えたいgridの一辺の長さ
 n = input + 2 #それに２を足す
 G = org_grid_2d_graph(n, n)
 
@@ -53,60 +53,7 @@ for ((s,t),(p,q)) in G.edges_iter(): #端のノードに隣接するエッジの
     else: #他のedgeは0で未設定で
         G.edge[(s,t)][(p,q)]['weight'] = 0
 
-# for ((s,t),(p,q)) in G.edges_iter(): #テスト
-#     if  p == n-1 or q == n-1:
-#         G.edge[(s,t)][(p,q)]['weight'] = 0
-
-G.edge[(1,0)][(1,1)]['weight'] = -1 #解が２になる小池さんグリッド
-G.edge[(2,0)][(2,1)]['weight'] = -1
-G.edge[(2,1)][(3,1)]['weight'] = -1
-G.edge[(2,2)][(3,2)]['weight'] = -1
-
-# G.edge[(2,0)][(2,1)]['weight'] = -1 #パワポの4*4グリッド
-# G.edge[(0,1)][(1,1)]['weight'] = -1
-# G.edge[(0,3)][(1,3)]['weight'] = -1
-# G.edge[(0,4)][(1,4)]['weight'] = -1
-# G.edge[(1,4)][(1,5)]['weight'] = -1
-# G.edge[(4,4)][(4,5)]['weight'] = -1
-# G.edge[(1,4)][(1,5)]['weight'] = -1
-# G.edge[(4,1)][(5,1)]['weight'] = -1
-# G.edge[(4,2)][(5,2)]['weight'] = -1
-
-# G.edge[(0,4)][(1,4)]['weight'] = 0 #4*4グリッド
-# G.edge[(0,3)][(1,3)]['weight'] = 0
-# G.edge[(0,2)][(1,2)]['weight'] = -1
-# G.edge[(0,1)][(1,1)]['weight'] = -1
-#
-# # G.edge[(1,0)][(1,1)]['weight'] = 0
-# G.edge[(2,0)][(2,1)]['weight'] = 0
-# # G.edge[(3,0)][(3,1)]['weight'] = 0
-# G.edge[(4,0)][(4,1)]['weight'] = 0
-#
-# G.edge[(4,1)][(5,1)]['weight'] = -1
-# G.edge[(4,2)][(5,2)]['weight'] = -1
-# G.edge[(4,3)][(5,3)]['weight'] = 0
-# G.edge[(4,4)][(5,4)]['weight'] = -1
-#
-# G.edge[(4,4)][(4,5)]['weight'] = -1
-# # G.edge[(3,4)][(3,5)]['weight'] = 0
-# G.edge[(2,4)][(2,5)]['weight'] = 0
-# G.edge[(1,4)][(1,5)]['weight'] = 0
-
-# G.edge[(0,3)][(1,3)]['weight'] = -1 #3*3グリッド
-# G.edge[(0,2)][(1,2)]['weight'] = -1
-# G.edge[(0,1)][(1,1)]['weight'] = 0
-#
-# G.edge[(1,0)][(1,1)]['weight'] = -1
-# G.edge[(2,0)][(2,1)]['weight'] = -1
-# G.edge[(3,0)][(3,1)]['weight'] = 0
-#
-# G.edge[(3,1)][(4,1)]['weight'] = 0
-# G.edge[(3,2)][(4,2)]['weight'] = -1
-# G.edge[(3,3)][(4,3)]['weight'] = 0
-#
-# G.edge[(3,3)][(3,4)]['weight'] = -1
-# G.edge[(2,3)][(2,4)]['weight'] = -1
-# G.edge[(1,3)][(1,4)]['weight'] = -1
+energy_count={15:0,0:0,5:0,10:0,9:0,6:0}
 
 energy_dic={15:1, #パターン１[1 1 1 1] #格子点におけるエネルギー
              0:2, #パターン２[0 0 0 0]
@@ -183,6 +130,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -194,15 +142,13 @@ for j in range(1,input+1):#1~n-2まですべての行
                     if weightsum == 1: #入るのが１本なら
                         temp_edge[i] = -1#上は入る矢印
                         temp_edge[0] = G.edge[(i,j)][(i+1,j)]['weight']
-                        print(temp_edge[i])
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
-                        print(temp_edge_energy,label)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
-                        print(newfrontier)
 
                     if weightsum == 2: #入るのが2本なら
                         temp_edge[i] = 1#上は出る矢印
@@ -210,6 +156,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -226,6 +173,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -236,6 +184,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -248,6 +197,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -259,6 +209,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -271,6 +222,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -282,6 +234,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         temp_edge_energy.append(temp_edge[0])
                         temp_edge_energy.append(temp_edge[i])
                         energy_label = label_generate(temp_edge_energy,3)
+                        energy_count[energy_label] += frontier[key1][key]['count']
                         temp_energysum = temp_energysum + energy_dic[energy_label]
                         label=label_generate(temp_edge,input)
                         newfrontier_generate(label, temp_energysum, temp_edge, newfrontier, frontier)
@@ -292,7 +245,7 @@ for j in range(1,input+1):#1~n-2まですべての行
             if G.edge[(0,j+1)][(1,j+1)]['weight'] == 0:#次の行の左端が自由端
                 print("左端自由端")
                 for key1 in newfrontier:#１つのフロンティアにつき２パターン
-                    for key in frontier[key1]:
+                    for key in newfrontier[key1]:
                         temp_edge=newfrontier[key1][key]['edge']
                         temp_energysum = key
                         temp_edge[0] = -1
@@ -318,11 +271,17 @@ for j in range(1,input+1):#1~n-2まですべての行
         newfrontier={}
         print(" ")
 
+tempcount=0
 count=0
 for key1 in frontier:
     for key in frontier[key1]:
-        count = count + frontier[key1][key]['count']
+        tempcount += frontier[key1][key]['count']
+    print(key1,tempcount)
+    count += tempcount
+    tempcount = 0
 print("配置パターン総数は",count)
+
+print(energy_count)
 
 for s,t in G.edges_iter(): #描画用処理判定可視化
     edge_labels[s,t] = G.edge[s][t]['weight']
