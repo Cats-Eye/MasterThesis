@@ -25,7 +25,11 @@ def newfrontier_generate(label_g, temp_energysum_g, temp_vertexcount_g, temp_edg
     if label_g in newfrontier_g:
         if temp_energysum_g in newfrontier_g[label_g]:
             if temp_vertexcount_g == newfrontier_g[label_g][temp_energysum_g]['vertexcount']:
-                newfrontier_g[label_g][temp_energysum_g]['count'] = newfrontier_g[label_g][temp_energysum_g]['count'] + frontier_g[key1][key]['count']
+                newfrontier_g[label_g][temp_energysum_g]['count'] += frontier_g[key1][key]['count']
+            else:
+                newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('edge', copy.deepcopy(temp_edge))#フロンティアの辺の向き
+                newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('count', frontier_g[key1][key]['count'])#場合の数
+                newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('vertexcount', copy.deepcopy(temp_vertexcount))
         else:
             newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('edge', copy.deepcopy(temp_edge))#フロンティアの辺の向き
             newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('count', frontier_g[key1][key]['count'])#場合の数
@@ -34,9 +38,8 @@ def newfrontier_generate(label_g, temp_energysum_g, temp_vertexcount_g, temp_edg
         newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('edge', copy.deepcopy(temp_edge))#フロンティアの辺の向き
         newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('count', frontier_g[key1][key]['count'])#場合の数
         newfrontier_g.setdefault(label_g, {}).setdefault(temp_energysum_g, {}).setdefault('vertexcount', copy.deepcopy(temp_vertexcount))
-    return(0)
 
-input =  2 #考えたいgridの一辺の長さ
+input =  3 #考えたいgridの一辺の長さ
 n = input + 2 #それに２を足す
 G = org_grid_2d_graph(n, n)
 
@@ -57,10 +60,21 @@ for ((s,t),(p,q)) in G.edges_iter(): #端のノードに隣接するエッジの
         G.edge[(s,t)][(p,q)]['weight'] = 0
 
 
-G.edge[(1,0)][(1,1)]['weight'] = -1 #解が２になる小池さんグリッド
+G.edge[(0,3)][(1,3)]['weight'] = -1 #3*3グリッド
+G.edge[(0,2)][(1,2)]['weight'] = -1
+G.edge[(0,1)][(1,1)]['weight'] = 0
+
+G.edge[(1,0)][(1,1)]['weight'] = -1
 G.edge[(2,0)][(2,1)]['weight'] = -1
-G.edge[(2,1)][(3,1)]['weight'] = -1
-G.edge[(2,2)][(3,2)]['weight'] = -1
+G.edge[(3,0)][(3,1)]['weight'] = 0
+
+G.edge[(3,1)][(4,1)]['weight'] = 0
+G.edge[(3,2)][(4,2)]['weight'] = -1
+G.edge[(3,3)][(4,3)]['weight'] = 0
+
+G.edge[(3,3)][(3,4)]['weight'] = -1
+G.edge[(2,3)][(2,4)]['weight'] = -1
+G.edge[(1,3)][(1,4)]['weight'] = -1
 
 vertexcount={15:0,0:0,5:0,10:0,9:0,6:0}
 
@@ -116,12 +130,11 @@ print(frontier)
 for j in range(1,input+1):#1~n-2まですべての行
     for i in range(1,input+1):#すべての列
         print((i,j))
-        print(frontier)
+        # print(frontier)
         for key1 in frontier:#すべてのフロンティアについて
             for key in frontier[key1]:
                 temp_edge = frontier[key1][key]['edge']#１つのフロンティアについてedgeを取り出す
                 temp_vertexcount = frontier[key1][key]['vertexcount']
-                print("temp_vertexcountは",temp_vertexcount)
                 temp_edge_energy=[temp_edge[0],temp_edge[i]]
                 temp_energysum = key
                 weightsum = 0
@@ -131,7 +144,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                     weightsum += 1
 
                 if G.edge[(i,j)][(i,j+1)]['weight'] != 0 and G.edge[(i,j)][(i+1,j)]['weight'] != 0: #右も上も処理済
-                    print(temp_edge,"右も上も処理済")
+                    print(key,frontier[key1][key]['count'],temp_edge,"右も上も処理済")
                     if G.edge[(i,j)][(i,j+1)]['weight'] == -1:#上は入る矢印
                         weightsum += 1
                     if G.edge[(i,j)][(i+1,j)]['weight'] == -1:#右は入る矢印
@@ -148,7 +161,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         newfrontier_generate(label, temp_energysum, temp_vertexcount, temp_edge, newfrontier, frontier)
 
                 elif G.edge[(i,j)][(i+1,j)]['weight'] != 0: #右が処理済
-                    print(temp_edge,"右が処理済")
+                    print(key,frontier[key1][key]['count'],temp_edge,"右が処理済")
                     if G.edge[(i,j)][(i+1,j)]['weight'] == -1: #右は入る矢印
                         weightsum += 1
                     if weightsum == 1: #入るのが１本なら
@@ -174,7 +187,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         newfrontier_generate(label, temp_energysum, temp_vertexcount, temp_edge, newfrontier, frontier)
 
                 elif G.edge[(i,j)][(i,j+1)]['weight'] != 0: #上が処理済
-                    print(temp_edge,"上が処理済")
+                    print(key,frontier[key1][key]['count'],temp_edge,"上が処理済")
                     if G.edge[(i,j)][(i,j+1)]['weight'] == -1: #上は入る矢印
                         weightsum += 1
 
@@ -202,7 +215,7 @@ for j in range(1,input+1):#1~n-2まですべての行
 
                 else: #右も上も未処理
                     if weightsum == 0: #出るのが2本なら
-                        print(temp_edge,"右も上も未処理","出るのが２本")
+                        print(key,frontier[key1][key]['count'],temp_edge,"右も上も未処理","出るのが２本")
                         temp_edge[i] = -1#上は入る矢印
                         temp_edge[0] = -1#右も入る矢印
                         temp_edge_energy.append(temp_edge[0])
@@ -214,7 +227,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         newfrontier_generate(label, temp_energysum, temp_vertexcount, temp_edge, newfrontier, frontier)
 
                     elif weightsum == 1: #入るのが１本なら２パターン
-                        print(temp_edge,"右も上も未処理","入るのが１本で２パターン")
+                        print(key,frontier[key1][key]['count'],temp_edge,"右も上も未処理","入るのが１本で２パターン")
                         temp_edge[i] = -1 #上は入る矢印
                         temp_edge[0] = 1 #右は出る矢印
                         temp_edge_energy.append(temp_edge[0])
@@ -240,7 +253,7 @@ for j in range(1,input+1):#1~n-2まですべての行
                         newfrontier_generate(label, temp_energysum, temp_vertexcount, temp_edge, newfrontier, frontier)
 
                     else: #weightsum == 2で入るのが2本なら
-                        print(temp_edge,"右も上も未処理","入るのが２本")
+                        print(key,frontier[key1][key]['count'],temp_edge,"右も上も未処理","入るのが２本")
                         temp_edge[i] = 1 #上は出る矢印
                         temp_edge[0] = 1 #右も出る矢印
                         temp_edge_energy.append(temp_edge[0])
@@ -299,6 +312,7 @@ for key1 in frontier:
     tempcount2 = 0
     for key in frontier[key1]:
         tempcount2 += frontier[key1][key]['count']
+        print(key,tempcount2)
     count += tempcount2
 print("配置パターン総数は",count)
 
