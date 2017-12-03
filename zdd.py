@@ -3,6 +3,9 @@
 
 from graphviz import Digraph
 import copy
+import time
+
+start = time.time()
 
 class Node(object):
     def __init__(self, l, f, parents_pattern=''): #初期化　コンストラクタ
@@ -17,13 +20,13 @@ class Node(object):
             temp_frontier[0] = 0 #左は未処理
         patterns = pattern_dic[(temp_frontier[0], temp_frontier[place])] #左と下の状態から
         for i in patterns[0]: #無しパターン
-            print(i, "なし", end =' ')
+            # print(i, "なし", end =' ')
             # for parent in self.parents:
                 # parent[1].child　枝が伸びてるのが自分だけならparentsを消去
             self.child[i] = falseend.index #o終端に関しては親への枝を書き足さない
 
         for i in patterns[1]: #有りパターン
-            print(i, "あり", end =' ')
+            # print(i, "あり", end =' ')
             temp_frontier[0] = direction_dic[i][0] #フロンティアを更新
             temp_frontier[place] = direction_dic[i][1]
             new_frontier = copy.deepcopy(temp_frontier)
@@ -35,7 +38,7 @@ class Node(object):
             else:
                 for node in levelset[l]:
                     if Nodes[node].frontier == new_frontier: #同じ条件のものがあれば
-                        print("node有", end =' ')
+                        # print("node有", end =' ')
                         self.child[i] = node.index
                         Nodes[node].parents.append((self.index, i)) #親への枝を追加
                         break
@@ -43,19 +46,40 @@ class Node(object):
                     new_node = Node(l, new_frontier, (self.index, i))
                     levelset[l].append(new_node.index)
                     Nodes[new_node.index] =  new_node
-                    print("node無", end =' ')
+                    # print("node無", end =' ')
                     self.child[i] = new_node.index
 
             # print(Nodes)
             # print(levelset)
 
-
     def output(self):
         print(self.frontier, self.child, self.parents)
 
+pattern_dic = {( 0, 0): {1:[0,1,2,3,4,5], 0:[]}, #制限無し
+               ( 1, 0): {1:[0,2,4], 0:[1,3,5]},  #左が正
+               (-1, 0): {1:[1,3,5], 0:[0,2,4]},  #左が負
+               ( 0, 1): {1:[0,3,5], 0:[1,2,4]},  #下が正
+               ( 0,-1): {1:[1,2,4], 0:[0,3,5]},  #下が負
+               ( 1, 1): {1:[0], 0:[1,2,3,4,5]},  #左が正、下が正
+               (-1,-1): {1:[1], 0:[0,2,3,4,5]},  #左が負、下が負
+               (-1, 1): {1:[3,5], 0:[0,1,2,4]},  #左が負、下が正
+               ( 1,-1): {1:[2,4], 0:[0,1,3,5]}}  #左が正、下が負
 
+direction_dic = {0:[ 1, 1], #各配置パターンにおける[左, 上]の正負
+                 1:[-1,-1],
+                 2:[ 1,-1],
+                 3:[-1, 1],
+                 4:[-1, 1],
+                 5:[ 1,-1]}
 
-input =  3 #考えたいgridの一辺の長さ
+energy_dic={0:1, #各配置におけるエネルギー
+            1:2,
+            2:3,
+            3:4,
+            4:5,
+            5:6}
+
+input =  4 #考えたいgridの一辺の長さ
 nodesum = input**2 #node総数
 
 Nodes = {} #indexをキーとしたNodeインスタンスのディクショナリ
@@ -75,41 +99,17 @@ trueend = Node(0, [0]*(input+1))
 levelset[0].append(trueend.index) #0終端
 Nodes[trueend.index] =  trueend
 
-pattern_dic = {( 0, 0): {1:[0,1,2,3,4,5], 0:[]}, #制限無し
-               ( 1, 0): {1:[0,2,4], 0:[1,3,5]},  #左が正
-               (-1, 0): {1:[2,3,5], 0:[0,1,4]},  #左が負
-               ( 0, 1): {1:[0,3,5], 0:[1,2,4]},  #下が正
-               ( 0,-1): {1:[1,2,4], 0:[0,3,5]},  #下が負
-               ( 1, 1): {1:[0], 0:[1,2,3,4,5]},  #左が正、下が正
-               (-1,-1): {1:[1], 0:[0,2,3,4,5]},  #左が負、下が負
-               (-1, 1): {1:[3,5], 0:[0,1,2,4]},  #左が負、下が正
-               ( 1,-1): {1:[2,5], 0:[0,1,3,4]}}  #左が正、下が負
-
-direction_dic = {0:[ 1, 1], #各配置パターンにおける[左, 上]の正負
-                 1:[-1,-1],
-                 2:[ 1,-1],
-                 3:[-1, 1],
-                 4:[-1, 1],
-                 5:[ 1,-1]}
-
-energy_dic={0:1, #各配置におけるエネルギー
-            1:2,
-            2:3,
-            3:4,
-            4:5,
-            5:6}
-
 for level in range(nodesum, 0, -1): #1~nodesumまでの各レベルについて
-    print("レベル",level)
+    # print("レベル",level)
     place = (nodesum - level + 1) % input #左から数えたnode位置
     if place == 0: #右端は割り切れて0になるのでinputに書き換え
         place = input
 
     for node_index in levelset[level]: #各レベルにあるnodeについて
-        print('\n', node_index)
+        # print('\n', node_index)
         node = Nodes[node_index]
         node.insert(level-1)
-    print(levelset,'\n')
+    # print(levelset,'\n')
 
 del Nodes['(-1, 0)'] #0終端にはparentsを格納していないので除く
 del Nodes[str((nodesum, 0))] #根にはparentsを格納していないので除く
@@ -132,21 +132,24 @@ for level in range(0, nodesum): #0~nodesumまでの各レベルについて下�
                     Nodes_Energy[parent[0]][new_energysum] = Nodes_Energy[node_index][energysum]
     for node_index in levelset[level]:
         del Nodes_Energy[node_index]
-    print("えなじー",Nodes_Energy)
+    # print("えなじー",Nodes_Energy)
 sum = 0
 for energysum in Nodes_Energy[root.index]:
+    print(energysum, Nodes_Energy[root.index][energysum])
     sum += Nodes_Energy[root.index][energysum]
 print("配置総数は", sum)
 
+elapsed_time = time.time() - start
+print ("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 
-G = Digraph(format='png') #Graphviz
-G.attr('node', shape='circle')
-
-for node_index in Nodes:
-    G.node(node_index)
-    temp_parents = Nodes[node_index].parents
-    for parent in temp_parents:
-        G.edge(parent[0], node_index, label = str(parent[1]))
-
-# print(G)# print()するとdot形式で出力される
-G.render('tree') #tree.pngで保存
+# G = Digraph(format='png') #Graphviz
+# G.attr('node', shape='circle')
+#
+# for node_index in Nodes:
+#     G.node(node_index)
+#     temp_parents = Nodes[node_index].parents
+#     for parent in temp_parents:
+#         G.edge(parent[0], node_index, label = str(parent[1]))
+#
+# # print(G)# print()するとdot形式で出力される
+# G.render('tree') #tree.pngで保存
