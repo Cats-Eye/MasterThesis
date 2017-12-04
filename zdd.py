@@ -4,6 +4,7 @@
 from graphviz import Digraph
 import copy
 import time
+import sys
 
 start = time.time()
 
@@ -79,7 +80,7 @@ energy_dic={0:1, #各配置におけるエネルギー
             4:5,
             5:6}
 
-input =  4 #考えたいgridの一辺の長さ
+input = 3  #考えたいgridの一辺の長さ
 nodesum = input**2 #node総数
 
 Nodes = {} #indexをキーとしたNodeインスタンスのディクショナリ
@@ -90,6 +91,8 @@ for level in range(nodesum, -2, -1): #-1~nodesumまで
 root = Node(nodesum, [0]*(input+1))
 levelset[nodesum].append(root.index)
 Nodes[root.index] =  root
+memory = sys.getsizeof(root)
+print(memory)
 
 falseend = Node(-1, [0]*(input+1))
 levelset[-1].append(falseend.index) #0終端
@@ -134,13 +137,16 @@ for level in range(0, nodesum): #0~nodesumまでの各レベルについて下�
         del Nodes_Energy[node_index]
     # print("えなじー",Nodes_Energy)
 sum = 0
+f = open('result.txt', 'w')
+
 for energysum in Nodes_Energy[root.index]:
-    print(energysum, Nodes_Energy[root.index][energysum])
+    # f.write(str(energysum) + " " +str(Nodes_Energy[root.index][energysum]) + "\n")
     sum += Nodes_Energy[root.index][energysum]
-print("配置総数は", sum)
 
 elapsed_time = time.time() - start
-print ("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+f.write("input" + str(input) + "の配置総数は" + str(sum) + "\n")
+f.write("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+f.close()
 
 # G = Digraph(format='png') #Graphviz
 # G.attr('node', shape='circle')
@@ -151,5 +157,5 @@ print ("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 #     for parent in temp_parents:
 #         G.edge(parent[0], node_index, label = str(parent[1]))
 #
-# # print(G)# print()するとdot形式で出力される
+# # print(G) #dot形式で出力
 # G.render('tree') #tree.pngで保存

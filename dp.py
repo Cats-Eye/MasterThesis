@@ -3,25 +3,15 @@ import time
 
 start = time.time()
 
-def label_generate(temp_edge_g, input_g):#ラベル生成関数
-    label_g = 0
-    for i in range(0,input_g+1):#フロンティアについてラベル付け
-        if temp_edge_g[i] == 1:
-            label_g = label_g + (2**i)*1#ただし逆順で計算しているので注意
-        else:
-            label_g = label_g + (2**i)*0
-    return(label_g)
-
 class Front(object):
-    def __init__(self, l, f, n, e, np): #初期化　コンストラクタ
-        self.index = l #フロンティアのラベル
+    def __init__(self, f, n, e): #初期化　コンストラクタ
         self.frontier = f #フロンティア
         self.count = n #個数
         self.energysum = e #エネルギー合計
-        self.nodepattern = np #各パターンの個数
+        # self.nodepattern = np #各パターンの個数
 
     def output(self):
-        print(sself.energysum, self.count)
+        print(self.energysum, self.count)
 
     def insert(self):
         temp_frontier = self.frontier
@@ -30,7 +20,7 @@ class Front(object):
             temp_frontier[0] = 0 #左は未処理
         patterns = pattern_dic[(temp_frontier[0], temp_frontier[place])] #左と下の状態から
         temp_energysum = self.energysum
-        temp_nodepattern = self.nodepattern
+        # temp_nodepattern = self.nodepattern
 
         for i in patterns: #有りパターン
             # print(i, "あり", end =' ')
@@ -38,18 +28,17 @@ class Front(object):
             temp_frontier[place] = direction_dic[i][1]
             new_frontier = copy.deepcopy(temp_frontier)
             new_energysum = self.energysum + energy_dic[i]
-            temp_nodepattern[i] += 1
-            new_nodepattern = copy.deepcopy(temp_nodepattern)
+            # temp_nodepattern[i] += 1
+            # new_nodepattern = copy.deepcopy(temp_nodepattern)
 
             for front in NewFronts:
-                if front.frontier == new_frontier and front.energysum == new_energysum and front.nodepattern == new_nodepattern: #同じ条件のものがあれば
+                if front.frontier == new_frontier and front.energysum == new_energysum: #同じ条件のものがあれば
                     # print("front有", end =' ')
                     front.count += self.count  #個数を追加
                     break
             else: #同じ条件のものがなくbreakしなかった場合
                 # print("front無", end =' ')
-                label=label_generate(new_frontier,input)
-                new_front = Front(label, new_frontier, self.count, new_energysum, new_nodepattern)
+                new_front = Front(new_frontier, self.count, new_energysum)
                 NewFronts.append(new_front)
 
 pattern_dic = {( 0, 0): [0,1,2,3,4,5], #制限無し
@@ -76,13 +65,13 @@ energy_dic={0:1, #各配置におけるエネルギー
             4:5,
             5:6}
 
-input =  4 #考えたいgridの一辺の長さ
+input = 7 #考えたいgridの一辺の長さ
 nodesum = input**2 #node総数
 
 OldFronts=[] #各ノードにおける古いfront集合
 NewFronts=[] #各ノードにおける新しいfront集合
 
-first_front = Front(0, [0]*(input+1), 1, 0, [0]*6)
+first_front = Front([0]*(input+1), 1, 0)
 OldFronts.append(first_front)
 
 for node in range(nodesum, 0, -1): #各nodeについて
@@ -99,16 +88,22 @@ for node in range(nodesum, 0, -1): #各nodeについて
 
 Energy = {}
 sum = 0
+f = open('result.txt', 'w')
+
 for front in OldFronts:
     sum += front.count
     if front.energysum in Energy:
         Energy[front.energysum] += front.count
     else:
         Energy[front.energysum] = front.count
-print("配置総数は", sum)
+# print("配置総数は", sum)
 
-for k, v in sorted(Energy.items()):
-    print(str(k), str(v))
+# f.write("エネルギー合計　個数" + "\n")
+# for k, v in sorted(Energy.items()):
+    # f.write(str(k) + " " + str(v) + "\n")
 
 elapsed_time = time.time() - start
-print ("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+f.write("input" + str(input) + "の配置総数は" + str(sum) + "\n")
+f.write("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+
+f.close()
