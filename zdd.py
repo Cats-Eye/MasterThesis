@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+##!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# from graphviz import Digraph
+from graphviz import Digraph
 import copy
 import time
 import sys
@@ -30,22 +30,31 @@ class Node(object):
             temp_frontier[0] = direction_dic[i][0] #フロンティアを更新
             temp_frontier[place] = direction_dic[i][1]
             new_frontier = copy.deepcopy(temp_frontier)
+            label = label_generate(new_frontier)
 
             if l == 0: #最後の段
                 self.child[i] = trueend.index #1終端につなぐ
                 trueend.parents.append((self.index, i))
 
             else:
-                for node in levelset[l]:
-                    if Nodes[node].frontier == new_frontier: #同じ条件のものがあれば
-                        self.child[i] = node.index
-                        Nodes[node].parents.append((self.index, i)) #親への枝を追加
-                        break
-                else: #同じ条件のものがなくbreakしなかった場合
+                if label in frontierset:
+                        self.child[i] = frontierset[label].index
+                        frontierset[label].parents.append((self.index, i)) #親への枝を追加
+                else: #同じfrontierをもつnodeがない
                     new_node = Node(l, new_frontier, (self.index, i))
                     levelset[l].append(new_node.index)
+                    frontierset[label] = new_node
                     Nodes[new_node.index] =  new_node
                     self.child[i] = new_node.index
+
+def label_generate(temp_edge_g):#ラベル生成関数
+    label_g = 0
+    for i in range(0,input+1):#フロンティアについてラベル付け
+        if temp_edge_g[i] == 1:
+            label_g = label_g + (2**i)*1#ただし逆順で計算しているので注意
+        else:
+            label_g = label_g + (2**i)*0
+    return(label_g)
 
 # 対象ノードの(左, 下)の状態からみて可能なパターン
 # 0は方向未処理、1は正方向、-1は負方向
@@ -73,7 +82,7 @@ energy_dic={0:1, #各配置におけるエネルギー
             4:5,
             5:6}
 
-input = 13  #考えたいgridの一辺の長さ
+input = 10  #考えたいgridの一辺の長さ
 nodesum = input**2 #node総数
 
 Nodes = {} #indexをキーとしたNodeインスタンスのディクショナリ
@@ -95,6 +104,7 @@ Nodes[trueend.index] =  trueend
 
 for level in range(nodesum, 0, -1): #1~nodesumまでの各レベルについて
     place = (nodesum - level + 1) % input #左から数えたnode位置
+    frontierset = {} #各frontierにおけるnode集合
     if place == 0: #右端は割り切れて0になるのでinputに書き換え
         place = input
 
