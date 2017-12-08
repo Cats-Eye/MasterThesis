@@ -3,32 +3,23 @@ import time
 
 start = time.time()
 
-class Front(object):
-    def __init__(self, f, n, e): #初期化　コンストラクタ
-        self.frontier = f #フロンティア
-        self.count = n #個数
-        self.energysum = e #エネルギー合計
+def label_generate(frontier_g):#ラベル生成関数
+    label_g = 0
+    for i in range(0,input+1):#フロンティアについてラベル付け
+        if frontier_g[i] == -1:
+            label_g = label_g + (3**i)*0#ただし逆順で計算しているので注意
+        elif frontier_g[i] == 0:
+            label_g = label_g + (3**i)*1
+        else:
+            label_g = label_g + (3**i)*2
+    return(label_g)
 
-    def insert(self):
-        temp_frontier = self.frontier
-        if place == 1: #行が１つ上になって左端の場合
-            temp_frontier[0] = 0 #左は未処理
-        patterns = pattern_dic[(temp_frontier[0], temp_frontier[place])] #左と下の状態から
-        temp_energysum = self.energysum #更新前のフロンティア
-
-        for i in patterns: #有りパターン
-            temp_frontier[0] = direction_dic[i][0] #フロンティアを更新
-            temp_frontier[place] = direction_dic[i][1]
-            new_frontier = copy.deepcopy(temp_frontier)
-            new_energysum = self.energysum + energy_dic[i] #エネルギー合計を更新
-
-            for front in NewFronts:
-                if front.frontier == new_frontier and front.energysum == new_energysum: #同じ条件のものがあれば
-                    front.count += self.count  #個数を追加
-                    break
-            else: #同じ条件のものがなくbreakしなかった場合
-                new_front = Front(new_frontier, self.count, new_energysum) #新しくfrontを作る
-                NewFronts.append(new_front)
+def frontier_generate(label_g):#frontier生成関数
+    frontier_g = [0]*(input+1)
+    for i in range(0,input+1):
+        frontier_g[i] = label_g % 3 - 1 # [0, 1, 2]が[-1, 0, 1]に対応
+        label_g = label_g // 3
+    return(frontier_g)
 
 # 対象ノードの(左, 下)の状態からみて可能なパターン
 # 0は方向未処理、1は正方向、-1は負方向
@@ -56,46 +47,62 @@ energy_dic={0:1, #各配置におけるエネルギー
             4:5,
             5:6}
 
-input = 7 #考えたいgridの一辺の長さ
+input = 12 #考えたいgridの一辺の長さ
 nodesum = input**2 #node総数
 frontsum = 1
 
-OldFronts=[] #各ノードにおける古いfront集合
-NewFronts=[] #各ノードにおける新しいfront集合
+#energysum, frontierのラベルをキーとする場合の数
+OldFronts = {} #各ノードにおける更新前front集合
+NewFronts = {} #各ノードにおける更新後front集合
 
-first_front = Front([0]*(input+1), 1, 0) #初期front
-OldFronts.append(first_front)
+first_frontier = [0]*(input+1) #初期frontier
+label = label_generate(first_frontier)
+OldFronts.setdefault(0, {}).setdefault(label, 1)
 
 for node in range(nodesum, 0, -1): #各nodeについて
     place = (nodesum - node + 1) % input #左から数えたnode位置
     if place == 0: #右端は割り切れて0になるのでinputに書き換え
         place = input
 
-    for front in OldFronts: #各frontについて更新
-        front.insert()
+    for energysum in OldFronts:
+        for label in OldFronts[energysum]:
+            new_frontier = frontier_generate(label)
+            if place == 1: #行が１つ上になって左端の場合
+                new_frontier[0] = 0 #左は未処理
+            patterns = pattern_dic[(new_frontier[0], new_frontier[place])] #左と下の状態から
 
-    frontsum += len(OldFronts)
+            for i in patterns: #有りパターン
+                new_frontier[0] = direction_dic[i][0] #フロンティアを更新
+                new_frontier[place] = direction_dic[i][1]
+                new_label = label_generate(new_frontier)
+                new_energysum = energysum + energy_dic[i] #エネルギー合計を更新
+
+                if (new_energysum in NewFronts) and (new_label in NewFronts[new_energysum]): #同じ条件のものがあれば
+                    NewFronts[new_energysum][new_label] += OldFronts[energysum][label] #場合の数を追加
+                else: #同じ条件のものがなかった場合
+                    NewFronts.setdefault(new_energysum, {}).setdefault(new_label, OldFronts[energysum][label]) #新しくfrontを作る
+                    frontsum += 1
     OldFronts = NewFronts
-    NewFronts = []
+    NewFronts = {}
 
 Energy = {}
 sum = 0
-f = open('result.txt', 'w')
+finalfrontsum = 0
 
-for front in OldFronts:
-    sum += front.count #配置パターン総数を求める
-    if front.energysum in Energy: #エネルギー総計毎にまとめる
-        Energy[front.energysum] += front.count
-    else:
-        Energy[front.energysum] = front.count
+for energysum in OldFronts:
+    Energy[energysum] = 0
+    for label in OldFronts[energysum]:
+        sum += OldFronts[energysum][label] #配置パターン総数を求める
+        Energy[energysum] += OldFronts[energysum][label] #エネルギー総計毎にまとめる
+        finalfrontsum += 1
 
 elapsed_time = time.time() - start
+f = open('result.txt', 'w')
 f.write("input" + str(input) + "の配置総数は" + str(sum) + "\n")
-f.write("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+f.write("elapsed_time:{0}".format(elapsed_time) + "[sec]" + "\n")
+f.write("フロント総数" + str(frontsum) + "最終フロント総数は" + str(finalfrontsum) + "\n")
 
 # for k, v in sorted(Energy.items()):
     # f.write(str(k) + " " + str(v) + "\n")
 
 f.close()
-
-print(input, "のフロント総数", frontsum, "最終フロント総数", len(OldFronts))

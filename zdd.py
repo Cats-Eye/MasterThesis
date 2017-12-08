@@ -1,7 +1,7 @@
 ##!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from graphviz import Digraph
+# from graphviz import Digraph
 import copy
 import time
 import sys
@@ -9,6 +9,7 @@ import sys
 start = time.time()
 
 class Node(object):
+    count = 0
     def __init__(self, l, f, parents_pattern=''): #初期化　コンストラクタ
         self.index = str((l,len(levelset[l])))
         self.frontier = f
@@ -16,7 +17,7 @@ class Node(object):
         self.parents = [parents_pattern] #親への枝(親ノード,パターン)
 
     def insert(self, l):
-        temp_frontier = self.frontier
+        temp_frontier = copy.deepcopy(self.frontier)
         if place == 1: #行が１つ上になって左端の場合
             temp_frontier[0] = 0 #左は未処理
         patterns = pattern_dic[(temp_frontier[0], temp_frontier[place])] #左と下の状態から
@@ -27,6 +28,7 @@ class Node(object):
             self.child[i] = falseend.index #o終端に関しては親への枝を書き足さない
 
         for i in patterns[1]: #有りパターン
+            Node.count += 1
             temp_frontier[0] = direction_dic[i][0] #フロンティアを更新
             temp_frontier[place] = direction_dic[i][1]
             new_frontier = copy.deepcopy(temp_frontier)
@@ -38,22 +40,25 @@ class Node(object):
 
             else:
                 if label in frontierset:
-                        self.child[i] = frontierset[label].index
-                        frontierset[label].parents.append((self.index, i)) #親への枝を追加
+                    same_node = Nodes[frontierset[label]]
+                    self.child[i] = frontierset[label]
+                    same_node.parents.append((self.index, i)) #親への枝を追加
                 else: #同じfrontierをもつnodeがない
                     new_node = Node(l, new_frontier, (self.index, i))
                     levelset[l].append(new_node.index)
-                    frontierset[label] = new_node
+                    frontierset[label] = new_node.index
                     Nodes[new_node.index] =  new_node
                     self.child[i] = new_node.index
 
-def label_generate(temp_edge_g):#ラベル生成関数
+def label_generate(temp_edge_g):#3進数によるラベル生成関数
     label_g = 0
     for i in range(0,input+1):#フロンティアについてラベル付け
-        if temp_edge_g[i] == 1:
-            label_g = label_g + (2**i)*1#ただし逆順で計算しているので注意
+        if temp_edge_g[i] == -1:
+            label_g = label_g + (3**i)*0#ただし逆順で計算しているので注意
+        elif temp_edge_g[i] == 0:
+            label_g = label_g + (3**i)*1
         else:
-            label_g = label_g + (2**i)*0
+            label_g = label_g + (3**i)*2
     return(label_g)
 
 # 対象ノードの(左, 下)の状態からみて可能なパターン
@@ -82,7 +87,7 @@ energy_dic={0:1, #各配置におけるエネルギー
             4:5,
             5:6}
 
-input = 10  #考えたいgridの一辺の長さ
+input = 14 #考えたいgridの一辺の長さ
 nodesum = input**2 #node総数
 
 Nodes = {} #indexをキーとしたNodeインスタンスのディクショナリ
@@ -133,6 +138,7 @@ for level in range(0, nodesum): #0~nodesumまでの各レベルについて下�
                     Nodes_Energy[parent[0]][new_energysum] = Nodes_Energy[node_index][energysum]
     for node_index in levelset[level]:
         del Nodes_Energy[node_index]
+
 sum = 0
 f = open('result.txt', 'w')
 
@@ -144,12 +150,13 @@ elapsed_time = time.time() - start
 
 f.write("input" + str(input) + "の配置総数は" + str(sum) + "\n")
 f.write("ノード総数は" + str(len(Nodes)) + "\n")
+f.write("ループは" + str(Node.count) + "\n" + "ラベル生成は" + str(Node.count*(input+1)) + "\n")
 f.write("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 f.close()
 
 # G = Digraph(format='png') #Graphviz
 # G.attr('node', shape='circle')
-#
+
 # for node_index in Nodes:
 #     G.node(node_index)
 #     temp_parents = Nodes[node_index].parents
