@@ -1,7 +1,7 @@
 ##!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# from graphviz import Digraph
+from graphviz import Digraph
 import copy
 import time
 import sys
@@ -10,16 +10,19 @@ start = time.time()
 
 class Node(object):
     count = 0
-    def __init__(self, l, f, parents_pattern=''): #初期化　コンストラクタ
+    def __init__(self, l, fl, parents_pattern=''): #初期化　コンストラクタ
         self.index = str((l,len(levelset[l])))
-        self.frontier = f
+        self.flabel = fl
         self.child = [0]*6 #各パターンへの子ノードへの枝
         self.parents = [parents_pattern] #親への枝(親ノード,パターン)
 
     def insert(self, l):
-        temp_frontier = copy.deepcopy(self.frontier)
+        temp_frontier = frontier_generate(self.flabel)
         if place == 1: #行が１つ上になって左端の場合
             temp_frontier[0] = 0 #左は未処理
+        if l >= nodesum-input: #最下段の場合
+            temp_frontier[place] = 0 #下は未処理
+            print(self.index)
         patterns = pattern_dic[(temp_frontier[0], temp_frontier[place])] #左と下の状態から
         for i in patterns[0]: #無しパターン
             # print(i, "なし", end =' ')
@@ -31,8 +34,8 @@ class Node(object):
             Node.count += 1
             temp_frontier[0] = direction_dic[i][0] #フロンティアを更新
             temp_frontier[place] = direction_dic[i][1]
-            new_frontier = copy.deepcopy(temp_frontier)
-            label = label_generate(new_frontier)
+            # new_frontier = copy.deepcopy(temp_frontier)
+            label = label_generate(temp_frontier)
 
             if l == 0: #最後の段
                 self.child[i] = trueend.index #1終端につなぐ
@@ -44,22 +47,30 @@ class Node(object):
                     self.child[i] = frontierset[label]
                     same_node.parents.append((self.index, i)) #親への枝を追加
                 else: #同じfrontierをもつnodeがない
-                    new_node = Node(l, new_frontier, (self.index, i))
+                    new_node = Node(l, label, (self.index, i))
                     levelset[l].append(new_node.index)
                     frontierset[label] = new_node.index
                     Nodes[new_node.index] =  new_node
                     self.child[i] = new_node.index
 
-def label_generate(temp_edge_g):#3進数によるラベル生成関数
+def label_generate(frontier_g):#2進数によるラベル生成関数
     label_g = 0
-    for i in range(0,input+1):#フロンティアについてラベル付け
-        if temp_edge_g[i] == -1:
-            label_g = label_g + (3**i)*0#ただし逆順で計算しているので注意
-        elif temp_edge_g[i] == 0:
-            label_g = label_g + (3**i)*1
+    for i in range(0,input+1):#frontierについてラベル付け
+        if frontier_g[i] == 1:
+            label_g += (2**i)*1#ただし逆順で計算しているので注意
         else:
-            label_g = label_g + (3**i)*2
+            label_g += (2**i)*0
     return(label_g)
+
+def frontier_generate(label_g):#frontier生成関数
+    frontier_g = [0]*(input+1)
+    for i in range(0,input+1):
+        if label_g % 2 == 0: # [0, 1]が[-1, 1]に対応
+            frontier_g[i] = -1
+        else:
+            frontier_g[i] = 1
+        label_g = label_g // 2
+    return(frontier_g)
 
 # 対象ノードの(左, 下)の状態からみて可能なパターン
 # 0は方向未処理、1は正方向、-1は負方向
@@ -87,7 +98,7 @@ energy_dic={0:1, #各配置におけるエネルギー
             4:5,
             5:6}
 
-input = 14 #考えたいgridの一辺の長さ
+input = 2 #考えたいgridの一辺の長さ
 nodesum = input**2 #node総数
 
 Nodes = {} #indexをキーとしたNodeインスタンスのディクショナリ
@@ -95,15 +106,15 @@ levelset = {} #各高さにおけるnode集合
 for level in range(nodesum, -2, -1): #-1~nodesumまで
     levelset[level]=[]
 
-root = Node(nodesum, [0]*(input+1)) #根頂点
+root = Node(nodesum, 0) #根頂点
 levelset[nodesum].append(root.index)
 Nodes[root.index] =  root
 
-falseend = Node(-1, [0]*(input+1)) #0終端
+falseend = Node(-1, 0) #0終端
 levelset[-1].append(falseend.index)
 Nodes[falseend.index] =  falseend
 
-trueend = Node(0, [0]*(input+1)) #1終端
+trueend = Node(0, 0) #1終端
 levelset[0].append(trueend.index)
 Nodes[trueend.index] =  trueend
 
@@ -154,14 +165,14 @@ f.write("ループは" + str(Node.count) + "\n" + "ラベル生成は" + str(Nod
 f.write("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 f.close()
 
-# G = Digraph(format='png') #Graphviz
-# G.attr('node', shape='circle')
+G = Digraph(format='png') #Graphviz
+G.attr('node', shape='circle')
 
-# for node_index in Nodes:
-#     G.node(node_index)
-#     temp_parents = Nodes[node_index].parents
-#     for parent in temp_parents:
-#         G.edge(parent[0], node_index, label = str(parent[1]))
-#
-# # print(G) #dot形式で出力
-# G.render('tree') #tree.pngで保存
+for node_index in Nodes:
+    G.node(node_index)
+    temp_parents = Nodes[node_index].parents
+    for parent in temp_parents:
+        G.edge(parent[0], node_index, label = str(parent[1]))
+
+# print(G) #dot形式で出力
+G.render('tree') #tree.pngで保存
