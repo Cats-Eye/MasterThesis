@@ -3,7 +3,7 @@ import time
 
 start = time.time()
 
-input = 2 #考えたいgridの一辺の長さ
+input = 4 #考えたいgridの一辺の長さ
 
 def frontier_generate(label_g):#frontier生成関数
     frontier_g = [0]*(input+1)
@@ -53,7 +53,7 @@ OldFronts.setdefault(0, {}).setdefault(0, 1)
 
 for node in range(nodesum, 0, -1): #各nodeについて
     place = (nodesum - node + 1) % input #左から数えたnode位置
-    if place == 0:
+    if place == 0: #右端は割り切れて0になるのでinputに書き換え
         place = input
     for energysum in OldFronts:
         for label in OldFronts[energysum]:
@@ -65,17 +65,16 @@ for node in range(nodesum, 0, -1): #各nodeについて
             if new_frontier[place] == 1:
                 old_label -= (2**place)*1
 
-            if place == 1: #左端の場合
-                new_frontier[0] = 0 #左は未処理
-            if node in range(nodesum-input, nodesum+1): #最下段の場合
+            if node >= nodesum-input+1: #歳下段の場合
                 new_frontier[place] = 0 #下は未処理
+            if place == 1: #行が１つ上になって左端の場合
+                new_frontier[0] = 0 #左は未処理
             patterns = pattern_dic[(new_frontier[0], new_frontier[place])] #左と下の状態から
 
             for i in patterns: #有りパターン
                 new_frontier[0] = direction_dic[i][0] #フロンティアを更新
                 new_frontier[place] = direction_dic[i][1]
                 new_label = old_label
-
                 if new_frontier[0] == 1: #ラベルを更新
                     new_label += (2**0)*1
                 if new_frontier[place] == 1:
