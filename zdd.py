@@ -7,28 +7,28 @@ import time
 
 start = time.time()
 
-input = 12 #考えたいgridの一辺の長さ
+input = 17 #考えたいgridの一辺の長さ
 
 class Node(object):
     # count = 0
     def __init__(self, l, fl, parents_pattern=''): #初期化　コンストラクタ
-        self.index = str((l,len(levelset[l])))
-        self.flabel = fl
+        self.index = str((l,len(levelset[l]))) #(level,level内ラベリング)というnode固有インデックス
+        self.flabel = fl #ビット化したfrontier
         self.child = [0]*6 #各パターンへの子ノードへの枝
         self.parents = [parents_pattern] #親への枝(親ノード,パターン)
 
     def insert(self, l):
         temp_label = self.flabel #次に渡すラベル準備
-        temp_label = temp_label & musk[0]
-        temp_label = temp_label & musk[place]
+        temp_label = temp_label & musk[0] #0(nodeの左)をマスク
+        temp_label = temp_label & musk[place] #place(nodeの下)をマスク
 
-        if l >= nodesum-input: #最下段の場合
-            if place == 1: #行が１つ上になって左端の場合
+        if l >= nodesum-input: #最下段の場合、place(nodeの下)は未処理(-1)
+            if place == 1: #行が１つ上になって左端の場合、0(nodeの左)は未処理(-1)
                 patterns = pattern_dic[(-1,-1)]
             else:
                 patterns = pattern_dic[(self.flabel & 1,-1)]
         else:
-            if place == 1: #行が１つ上になって左端の場合
+            if place == 1: #行が１つ上になって左端の場合、0(nodeの左)は未処理(-1)
                 patterns = pattern_dic[(-1, (self.flabel >> place) & 1)]
             else:
                 patterns = pattern_dic[(self.flabel & 1, (self.flabel >> place) & 1)]
@@ -52,12 +52,12 @@ class Node(object):
                 trueend.parents.append((self.index, i))
 
             else:
-                if new_label in frontierset:
+                if new_label in frontierset: #同じfrontierのnodeがあれば
                     same_node = Nodes[frontierset[new_label]]
-                    self.child[i] = frontierset[new_label]
-                    same_node.parents.append((self.index, i)) #親への枝を追加
+                    self.child[i] = frontierset[new_label] #そのnodeに子供の枝を追加
+                    same_node.parents.append((self.index, i)) #そのnodeの親への枝を追加
                 else: #同じfrontierをもつnodeがない
-                    new_node = Node(l, new_label, (self.index, i))
+                    new_node = Node(l, new_label, (self.index, i)) #新しくnodeを作る
                     levelset[l].append(new_node.index)
                     frontierset[new_label] = new_node.index
                     Nodes[new_node.index] =  new_node

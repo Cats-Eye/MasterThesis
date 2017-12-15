@@ -3,7 +3,7 @@ import time
 
 start = time.time()
 
-input = 13 #考えたいgridの一辺の長さ
+input = 16#考えたいgridの一辺の長さ
 
 # 対象ノードの(左, 下)の状態からみて可能なパターン
 # -1は方向未処理、0は負方向、1は正方向
@@ -54,16 +54,16 @@ for node in range(nodesum, 0, -1): #各nodeについて
     for energysum in OldFronts:
         for label in OldFronts[energysum]:
             temp_label = label #次に渡すラベル準備
-            temp_label = temp_label & musk[0]
-            temp_label = temp_label & musk[place]
+            temp_label = temp_label & musk[0] #0(nodeの左)をマスク
+            temp_label = temp_label & musk[place] #place(nodeの下)をマスク
 
-            if node >= nodesum-input+1: #最下段の場合
-                if place == 1: #行が１つ上になって左端の場合
+            if node >= nodesum-input+1: #最下段の場合、place(nodeの下)は未処理(-1)
+                if place == 1: #行が１つ上になって左端の場合、0(nodeの左)は未処理(-1)
                     patterns = pattern_dic[(-1,-1)]
                 else:
                     patterns = pattern_dic[(label & 1,-1)]
             else:
-                if place == 1: #行が１つ上になって左端の場合
+                if place == 1: #行が１つ上になって左端の場合、0(nodeの左)は未処理
                     patterns = pattern_dic[(-1, (label >> place) & 1)]
                 else:
                     patterns = pattern_dic[(label & 1, (label >> place) & 1)]
